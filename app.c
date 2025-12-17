@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <ctype.h>
+
 #include "raylib.h"
+
 
 // constants
 const int SCREEN_WIDTH = 450;
@@ -22,20 +25,28 @@ void store_number(char input_text[], int key, int *letter_count)
 
 void backspace_pressed(char input_text[], int *letter_count) 
 {
-    if (IsKeyDown(KEY_BACKSPACE)) {
-        (*letter_count)--;
-        if (*letter_count < 0) 
-            *letter_count = 0;
-        input_text[*letter_count] = '\0';
+    static int frame_counter = 0;
+    frame_counter++;
+
+    if (frame_counter % 5 == 0) {
+        if (IsKeyDown(KEY_BACKSPACE)) {
+            (*letter_count)--;
+            if (*letter_count < 0) 
+                *letter_count = 0;
+            input_text[*letter_count] = '\0';
+        }
     }
 }
 
 void get_key(char input_text[], int *letter_count) 
 {
     int key = GetCharPressed();
-
+    int is_operator = (key == '+' || key == '-' || key == '*' || 
+                       key == '/' || key == '.' || key == '(' || key == ')');
     while (key > 0) {
-        store_number(input_text, key, &letter_count);
+        if (isdigit(key) || is_operator || key == '.') {
+            store_number(input_text, key, letter_count);
+        }
         key = GetCharPressed();
     }
 
