@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
-
+#include <string.h>
 #include "raylib.h"
 
 
@@ -41,9 +41,9 @@ void backspace_pressed(char input_text[], int *letter_count)
 void get_key(char input_text[], int *letter_count) 
 {
     int key = GetCharPressed();
-    int is_operator = (key == '+' || key == '-' || key == '*' || 
-                       key == '/' || key == '.' || key == '(' || key == ')');
     while (key > 0) {
+        int is_operator = (key == '+' || key == '-' || key == '*' || 
+                           key == '/' || key == '.' || key == '(' || key == ')');
         if (isdigit(key) || is_operator || key == '.') {
             store_number(input_text, key, letter_count);
         }
@@ -51,6 +51,38 @@ void get_key(char input_text[], int *letter_count)
     }
 
 }
+
+void eval_expr(char input_text[], int *letter_count) 
+{
+    if (IsKeyPressed(KEY_ENTER)) {
+        double num1 = 0, num2 = 0, result = 0;
+        char op = '\0';
+        int items_read = sscanf(input_text, "%lf %c %lf", &num1, &op, &num2);
+        if (items_read == 3) {
+            switch (op) {
+                case '+': result = num1 + num2; break;
+                case '-': result = num1 - num2; break;
+                case '*': result = num1 * num2; break;
+                case '/': 
+                    if (num2 != 0) result = num1 / num2;
+                    else result = 0;  // Handle divide by zero
+                    break;
+                default: result = 0;
+            }
+            
+            // Convert result back to string
+            snprintf(input_text, MAX_INPUT_CHARS, "%.2f", result);
+            *letter_count = strlen(input_text);
+        } else {
+            // If can't parse, show error
+            const char *error = "Error";
+            strncpy(input_text, error, MAX_INPUT_CHARS);
+            *letter_count = strlen(error);
+        }
+    }
+}
+
+
 
 int main(void) 
 {
@@ -71,6 +103,7 @@ int main(void)
     while (!WindowShouldClose()) {
         get_key(input_text, &letter_count);
         backspace_pressed(input_text, &letter_count);
+        eval_expr(input_text, &letter_count);
 
         BeginDrawing();
 
